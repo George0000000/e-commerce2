@@ -5,5 +5,13 @@
 {% endblock %}
 
 {% block body %}
-	<h1>Hello, world</h1>
+    <main class="main">
+        {% for el in data %}
+            <div class="good" style="border: 2px solid black">
+                <div class="good-title">{{ el.title }}</div>
+                <div class="good-about">{{ el.about }}</div>
+                <div class="good-price">{{ el.price }}</div>
+            </div>
+        {% endfor %}
+    </main>
 {% endblock %}
