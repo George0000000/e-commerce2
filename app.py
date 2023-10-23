@@ -75,6 +75,10 @@ def profile():
 
 @app.route('/authorization', methods=['GET', 'POST'])
 def authorization():
+    if 'user_id' in session:
+        flash('You are already logged in', 'info')
+        return redirect(url_for('profile'))
+
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
@@ -100,6 +104,10 @@ def logout():
 
 @app.route('/registration', methods=['GET', 'POST'])
 def register():
+    if 'user_id' in session:
+        flash('You are already logged in', 'info')
+        return redirect(url_for('profile'))
+
     if request.method == 'POST':
         username = request.form['username']
         email = request.form['email']
