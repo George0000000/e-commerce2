@@ -68,11 +68,11 @@ def profile():
     user = None
     if 'user_id' in session:
         user = User.query.get(session['user_id'])
-    return render_template('profile.html', user=user)
+    return render_template('profile.html', user=user, menu=menu)
 
 
 @app.route('/authorization', methods=['GET', 'POST'])
-def login():
+def authorization():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
@@ -86,7 +86,7 @@ def login():
         else:
             flash('Login failed. Check your credentials.', 'danger')
 
-    return render_template('authorization.html')
+    return render_template('authorization.html', menu=menu)
 
 
 # @app.route('/logout')
