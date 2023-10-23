@@ -65,9 +65,11 @@ def index():  # put application's code here
 
 @app.route('/profile')
 def profile():
-    user = None
-    if 'user_id' in session:
-        user = User.query.get(session['user_id'])
+    if 'user_id' not in session:
+        flash('You need to log in to access this page', 'danger')
+        return redirect(url_for('authorization'))
+
+    user = User.query.get(session['user_id'])
     return render_template('profile.html', user=user, menu=menu)
 
 
