@@ -3,13 +3,19 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from werkzeug.security import generate_password_hash, check_password_hash
-# from flask_login import login_required, logout_user, login_user
+# from flask_login import LoginManager, login_user, logout_user, login_required
 
 
 app = Flask(__name__)
+
+app.config['SESSION_COOKIE_SECURE'] = True  # Обязательно убедитесь, что сайт работает через HTTPS
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop.db'
 app.config['SECRET_KEY'] = '213jhbfguj1h1gs'
+
 db = SQLAlchemy(app)
+
 admin = Admin(app)
 
 
@@ -30,6 +36,9 @@ class User(db.Model):
     email = db.Column(db.String(50), nullable=False)
     password = db.Column(db.Text, nullable=False)
     isAdmin = db.Column(db.Boolean, default=False)
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
 
 
 menu = [
@@ -55,35 +64,34 @@ def index():  # put application's code here
 
 
 @app.route('/profile')
-# @login_required
 def profile():
-    # user = User.query.get(session['user_id'])
-    return render_template('profile.html', menu=menu)
-    # return render_template('profile.html', user=user, menu=menu)
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+    return render_template('profile.html', user=user)
 
 
 @app.route('/authorization', methods=['GET', 'POST'])
-def authorization():
-    # if request.method == 'POST':
-    #     email = request.form['email']
-    #     password = request.form['password']
-    #
-    #     user = User.query.filter_by(email=email).first()
-    #
-    #     if user and user.check_password(password):
-    #         session['user_id'] = user.id
-    #         flash('Login successful', 'success')
-    #         return redirect(url_for('profile'))
-    #     else:
-    #         flash('Login failed. Check your credentials.', 'danger')
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
 
-    return render_template('authorization.html', menu=menu)
+        user = User.query.filter_by(email=email).first()
+
+        if user and user.check_password(password):
+            session['user_id'] = user.id
+            flash('Login successful', 'success')
+            return redirect(url_for('profile'))
+        else:
+            flash('Login failed. Check your credentials.', 'danger')
+
+    return render_template('authorization.html')
 
 
 # @app.route('/logout')
-# @login_required
 # def logout():
-#     logout_user()
+#     session.pop('user_id', None)
 #     flash('You have been logged out', 'info')
 #     return redirect(url_for('index'))
 
