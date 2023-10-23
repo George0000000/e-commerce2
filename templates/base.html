@@ -28,8 +28,13 @@
             </form>
 
             <div class="text-end">
-                <a href="/authorization"><button type="button" class="btn btn-outline-light me-2">Login</button></a>
-                <a href="/registration"><button type="button" class="btn btn-warning">Sign-up</button></a>
+                {% if 'user_id' in session %}
+                    <a href="/profile"><button type="button" class="btn btn-outline-light me-2">Profile</button></a>
+                    <a href="/logout"><button type="button" class="btn btn-warning">Logout</button></a>
+                {% else %}
+                    <a href="/authorization"><button type="button" class="btn btn-outline-light me-2">Login</button></a>
+                    <a href="/registration"><button type="button" class="btn btn-warning">Sign-up</button></a>
+                {% endif %}
             </div>
           </div>
         </div>

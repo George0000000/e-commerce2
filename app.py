@@ -89,11 +89,11 @@ def authorization():
     return render_template('authorization.html', menu=menu)
 
 
-# @app.route('/logout')
-# def logout():
-#     session.pop('user_id', None)
-#     flash('You have been logged out', 'info')
-#     return redirect(url_for('index'))
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash('You have been logged out', 'info')
+    return redirect(url_for('index'))
 
 
 @app.route('/registration', methods=['GET', 'POST'])
