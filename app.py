@@ -3,7 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from werkzeug.security import generate_password_hash, check_password_hash
-# from flask_login import LoginManager, login_user, logout_user, login_required
+from flask_migrate import Migrate
+from wtforms import SelectField
 
 
 app = Flask(__name__)
@@ -13,18 +14,35 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop.db'
 app.config['SECRET_KEY'] = '213jhbfguj1h1gs'
-
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 admin = Admin(app)
 
 
-class Item(db.Model):
+class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    about = db.Column(db.Text)
-    price = db.Column(db.Integer)
-    isActive = db.Column(db.Boolean, default=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+
+
+class Subcategory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    category = db.relationship('Category', backref='subcategories')
+
+    @classmethod
+    def query_factory(cls):
+        return cls.query
+
+
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    about = db.Column(db.Text, nullable=True)
+    price = db.Column(db.Float, nullable=False)
+    subcategory_id = db.Column(db.Integer, db.ForeignKey('subcategory.id'), nullable=False)
+    subcategory = db.relationship('Subcategory', backref='products')
 
     def __repr__(self):
         return self.title
@@ -50,11 +68,24 @@ menu = [
 ]
 
 
-# class UserModelView(ModelView):
-#     column_exclude_list = ['password']
+admin.add_view(ModelView(Category, db.session))
 
 
-admin.add_view(ModelView(Item, db.session))
+class SubcategoryModelView(ModelView):
+    column_list = ['name', 'category']
+    form_columns = ['name', 'category']
+    # Укажите query_factory для поля category
+    form_extra_fields = {
+        'category': SelectField('Category', choices=[], coerce=int)
+    }
+    def on_form_prefill(self, form, id):
+        form.category.choices = [(category.id, category.name) for category in Category.query.all()]
+    def on_model_change(self, form, model, is_created):
+        model.category = Category.query.get(form.category.data)
+
+
+admin.add_view(SubcategoryModelView(Subcategory, db.session))
+admin.add_view(ModelView(Product, db.session))
 admin.add_view(ModelView(User, db.session))
 
 
@@ -143,8 +174,8 @@ def about():
 
 @app.route('/goods')
 def goods():
-    items = Item.query.order_by(Item.price).all()
-    return render_template('goods.html', menu=menu, data=items)
+    products = Product.query.order_by(Product.price).all()
+    return render_template('goods.html', menu=menu, data=products)
 
 
 @app.route('/services')
