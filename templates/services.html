@@ -6,22 +6,40 @@
 
 {% block body %}
     <main class="main">
-        {% for service in services %}
-            <div class="service">
-                <h2>{{ service.name }}</h2>
-                <p>{{ service.description }}</p>
-                <img src="{{ url_for('static', filename=service.image) }}" alt="Service Image">
-                <button class="contact-button" data-service-id="{{ service.id }}">Contact Us</button>
+        <div class="container mt-5">
+            <div class="row">
+                {% for service in data %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card">
+                            <img src="{{ service.image }}" class="card-img-top" alt="Изображение услуги">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ service.name }}</h5>
+                                <p class="card-text">{{ service.description }}</p>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contactModal">Заказать</button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
-        {% endfor %}
+        </div>
 
-        <div class="popup" id="contact-popup">
-            <div class="popup-content">
-                <span class="close" onclick="closePopup()">&times;</span>
-                <h2>Contact Us</h2>
-                <p>Enter your phone number:</p>
-                <input type="text" id="phone-input">
-                <button onclick="submitPhoneNumber()">Submit</button>
+        <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="contactModalLabel">Заказать услугу</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Номер телефона</label>
+                                <input type="tel" class="form-control" id="phone" placeholder="Введите ваш номер телефона" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Отправить</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
 

@@ -8,6 +8,9 @@ from flask_migrate import Migrate
 from wtforms import SelectField
 from flask_admin.form import Select2Widget
 from wtforms import Form, StringField, TextAreaField, FloatField
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 
 app = Flask(__name__)
@@ -91,8 +94,8 @@ class SubcategoryModelView(ModelView):
     column_filters = ['category']  # Список колонок, по которым можно фильтровать данные
 
 
-admin.add_view(ModelView(Category, db.session))
 admin.add_view(ModelView(Service, db.session))
+admin.add_view(ModelView(Category, db.session))
 admin.add_view(SubcategoryModelView(Subcategory, db.session))
 admin.add_view(ModelView(Product, db.session))
 admin.add_view(ModelView(User, db.session))
@@ -189,13 +192,42 @@ def goods():
 
 @app.route('/services')
 def services():
-    return render_template('services.html', menu=menu, title="Услуги")
+    service = Service.query.order_by(Service.name).all()
+    return render_template('services.html', data=service, menu=menu, title="Услуги")
 
 
 @app.route('/submit_phone', methods=['POST'])
 def submit_phone():
     phone_number = request.form['phone_number']
-    # Логика обработки номера телефона, отправки уведомления или сохранения в базе данных
+
+    # Отправка уведомления на почту
+    recipient_email = 'paninnskk@gmail.com'  # Замените на вашу почту
+    subject = 'Заказ услуги'
+    message = f'Номер телефона: {phone_number}, Заказанная услуга: {}'  # Замените service_name на реальное значение
+
+    # Ваш SMTP сервер и учетные данные
+    smtp_server = 'smtp.example.com'
+    smtp_port = 587
+    smtp_user = 'your_email@example.com'
+    smtp_password = 'your_password'
+
+    msg = MIMEMultipart()
+    msg['From'] = smtp_user
+    msg['To'] = recipient_email
+    msg['Subject'] = subject
+
+    msg.attach(MIMEText(message, 'plain'))
+
+    try:
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_user, smtp_password)
+        text = msg.as_string()
+        server.sendmail(smtp_user, recipient_email, text)
+        server.quit()
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'})
+
     return jsonify({'message': 'Phone number submitted successfully'})
 
 
