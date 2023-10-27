@@ -1,9 +1,31 @@
 {% extends 'base.html' %}
 
 {% block title %}
-	<title>О нас</title>
+	<title>{{ title }}</title>
 {% endblock %}
 
 {% block body %}
-	<h1>Hello, world</h1>
+    <main class="main">
+        {% for service in services %}
+            <div class="service">
+                <h2>{{ service.name }}</h2>
+                <p>{{ service.description }}</p>
+                <img src="{{ url_for('static', filename=service.image) }}" alt="Service Image">
+                <button class="contact-button" data-service-id="{{ service.id }}">Contact Us</button>
+            </div>
+        {% endfor %}
+
+        <div class="popup" id="contact-popup">
+            <div class="popup-content">
+                <span class="close" onclick="closePopup()">&times;</span>
+                <h2>Contact Us</h2>
+                <p>Enter your phone number:</p>
+                <input type="text" id="phone-input">
+                <button onclick="submitPhoneNumber()">Submit</button>
+            </div>
+        </div>
+
+    </main>
 {% endblock %}
+
+<script src="../static/js/popup.js"></script>

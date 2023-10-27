@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_admin.contrib.sqla.fields import QuerySelectField
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin
@@ -51,6 +51,13 @@ class Product(db.Model):
         return self.title
 
 
+class Service(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    image = db.Column(db.String(100), nullable=True)
+
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False)
@@ -76,9 +83,6 @@ class SubcategoryForm(Form):
     category = QuerySelectField('Category', query_factory=Subcategory.query_factory, widget=Select2Widget())  # Используем Select2Widget для выпадающего списка
 
 
-admin.add_view(ModelView(Category, db.session))
-
-
 class SubcategoryModelView(ModelView):
     column_list = ['name', 'category']  # Список отображаемых колонок
     form_columns = ['name', 'category']  # Колонки, которые отображаются в форме редактирования
@@ -87,6 +91,8 @@ class SubcategoryModelView(ModelView):
     column_filters = ['category']  # Список колонок, по которым можно фильтровать данные
 
 
+admin.add_view(ModelView(Category, db.session))
+admin.add_view(ModelView(Service, db.session))
 admin.add_view(SubcategoryModelView(Subcategory, db.session))
 admin.add_view(ModelView(Product, db.session))
 admin.add_view(ModelView(User, db.session))
@@ -94,7 +100,7 @@ admin.add_view(ModelView(User, db.session))
 
 @app.route('/')
 def index():  # put application's code here
-    return render_template('index.html', menu=menu)
+    return render_template('index.html', menu=menu, title='Главная')
 
 
 @app.route('/profile')
@@ -104,7 +110,7 @@ def profile():
         return redirect(url_for('authorization'))
 
     user = User.query.get(session['user_id'])
-    return render_template('profile.html', user=user, menu=menu)
+    return render_template('profile.html', user=user, title=user.username)
 
 
 @app.route('/authorization', methods=['GET', 'POST'])
@@ -126,7 +132,7 @@ def authorization():
         else:
             flash('Login failed. Check your credentials.', 'danger')
 
-    return render_template('authorization.html', menu=menu)
+    return render_template('authorization.html', menu=menu, title="Авторизация")
 
 
 @app.route('/logout')
@@ -183,7 +189,14 @@ def goods():
 
 @app.route('/services')
 def services():
-    return render_template('services.html', menu=menu)
+    return render_template('services.html', menu=menu, title="Услуги")
+
+
+@app.route('/submit_phone', methods=['POST'])
+def submit_phone():
+    phone_number = request.form['phone_number']
+    # Логика обработки номера телефона, отправки уведомления или сохранения в базе данных
+    return jsonify({'message': 'Phone number submitted successfully'})
 
 
 @app.route('/news')
