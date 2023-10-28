@@ -15,7 +15,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">{{ service.name }}</h5>
                                 <p class="card-text">{{ service.description }}</p>
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contactModal">Заказать</button>
+                                <button class="btn btn-primary" data-service="{{ service.name }}" data-bs-toggle="modal" data-bs-target="#contactModal">Заказать</button>
                             </div>
                         </div>
                     </div>
@@ -31,10 +31,11 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
                     </div>
                     <div class="modal-body">
-                        <form>
+                        <form action="/submit_phone" method="POST">  <!-- Добавьте action и метод POST -->
+                            <input type="hidden" id="service_name" name="service_name">  <!-- Добавьте скрытое поле для service_name -->
                             <div class="mb-3">
                                 <label for="phone" class="form-label">Номер телефона</label>
-                                <input type="tel" class="form-control" id="phone" placeholder="Введите ваш номер телефона" required>
+                                <input type="tel" class="form-control" id="phone" name="phone_number" placeholder="Введите ваш номер телефона" required>
                             </div>
                             <button type="submit" class="btn btn-primary">Отправить</button>
                         </form>

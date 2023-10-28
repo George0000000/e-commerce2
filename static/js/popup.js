@@ -18,3 +18,9 @@ function submitPhoneNumber() {
     const phoneNumber = document.getElementById('phone-input').value;
     // Логика для отправки номера телефона на сервер и обработки
 }
+
+document.querySelectorAll('.btn[data-bs-toggle="modal"]').forEach(button => {
+    button.addEventListener('click', function() {
+        document.getElementById('service_name').value = button.getAttribute('data-service');
+    });
+});

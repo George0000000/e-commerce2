@@ -113,7 +113,7 @@ def profile():
         return redirect(url_for('authorization'))
 
     user = User.query.get(session['user_id'])
-    return render_template('profile.html', user=user, title=user.username)
+    return render_template('profile.html', menu=menu, user=user, title=user.username)
 
 
 @app.route('/authorization', methods=['GET', 'POST'])
@@ -192,24 +192,29 @@ def goods():
 
 @app.route('/services')
 def services():
-    service = Service.query.order_by(Service.name).all()
-    return render_template('services.html', data=service, menu=menu, title="Услуги")
+    if request.method == 'POST':
+        service_name = request.form.get('service_name')
+        return render_template('services.html', menu=menu, title="Услуги", service_name=service_name)
+    else:
+        service = Service.query.order_by(Service.name).all()
+        return render_template('services.html', data=service, menu=menu, title="Услуги")
 
 
 @app.route('/submit_phone', methods=['POST'])
 def submit_phone():
     phone_number = request.form['phone_number']
+    service_name = request.form['service_name']  # Получаем название услуги
 
     # Отправка уведомления на почту
     recipient_email = 'paninnskk@gmail.com'  # Замените на вашу почту
     subject = 'Заказ услуги'
-    message = f'Номер телефона: {phone_number}, Заказанная услуга: {}'  # Замените service_name на реальное значение
+    message = f'Номер телефона: {phone_number}, Заказанная услуга: {service_name}'  # Замените service_name на реальное значение
 
     # Ваш SMTP сервер и учетные данные
-    smtp_server = 'smtp.example.com'
+    smtp_server = 'connect.smtp.bz'
     smtp_port = 587
-    smtp_user = 'your_email@example.com'
-    smtp_password = 'your_password'
+    smtp_user = 'paninnskk@gmail.com'
+    smtp_password = 'DGkCQEHnLRSR'
 
     msg = MIMEMultipart()
     msg['From'] = smtp_user
