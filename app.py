@@ -83,7 +83,7 @@ menu = [
 
 class SubcategoryForm(Form):
     name = StringField('Name')
-    category = QuerySelectField('Category', query_factory=Subcategory.query_factory, widget=Select2Widget())  # Используем Select2Widget для выпадающего списка
+    category = QuerySelectField('Category', query_factory=lambda: Category.query.all(), widget=Select2Widget(), render_kw={"class": "custom-class"})
 
 
 class SubcategoryModelView(ModelView):
