@@ -30,6 +30,9 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
 
+    def __str__(self):
+        return self.name
+
 
 class Subcategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -37,9 +40,8 @@ class Subcategory(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     category = db.relationship('Category', backref='subcategories')
 
-    @classmethod
-    def query_factory(cls):
-        return cls.query
+    def __str__(self):
+        return self.name
 
 
 class Product(db.Model):
@@ -83,7 +85,7 @@ menu = [
 
 class SubcategoryForm(Form):
     name = StringField('Name')
-    category = QuerySelectField('Category', query_factory=lambda: Category.query.all(), widget=Select2Widget(), render_kw={"class": "custom-class"})
+    category = QuerySelectField('Category', query_factory=lambda: Category.query.all())
 
 
 class SubcategoryModelView(ModelView):
