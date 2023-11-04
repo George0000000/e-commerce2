@@ -5,13 +5,125 @@
 {% endblock %}
 
 {% block body %}
-    <main class="main">
-        {% for el in data %}
-            <div class="good" style="border: 2px solid black">
-                <div class="good-title">{{ el.title }}</div>
-                <div class="good-about">{{ el.about }}</div>
-                <div class="good-price">{{ el.price }}</div>
-            </div>
-        {% endfor %}
-    </main>
+{#    <main class="main">#}
+{#        {% for el in data %}#}
+{#            <div class="good" style="border: 2px solid black">#}
+{#                <div class="good-title">{{ el.title }}</div>#}
+{#                <div class="good-about">{{ el.about }}</div>#}
+{#                <div class="good-price">{{ el.price }}</div>#}
+{#            </div>#}
+{#        {% endfor %}#}
+{#    </main>#}
+        <h1>Каталог товаров</h1>
+
+    <!-- Форма выбора категории -->
+    <label for="category">Выберите категорию:</label>
+    <select id="category" name="category" onchange="getSubcategories()">
+      <option value="all">Все категории</option>
+      {% for category in categories %}
+        <option value="{{ category.id }}">{{ category.name }}</option>
+      {% endfor %}
+    </select>
+
+    <br>
+
+    <label for="subcategory">Выберите подкатегорию:</label>
+    <select id="subcategory" name="subcategory" disabled>
+      <option value="" disabled selected>Все подкатегории</option>
+      <option value="all">Все подкатегории</option>
+    </select>
+
+    <!-- Таблица с товарами -->
+    <table>
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Описание</th>
+                <th>Цена</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for el in data %}
+                <tr>
+                    <td>{{ el.name }}</td>
+                    <td>{{ el.about }}</td>
+                    <td>{{ el.price }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+
+        function getSubcategories() {
+          const categorySelect = document.getElementById("category");
+          const subcategorySelect = document.getElementById("subcategory");
+          const categoryId = categorySelect.value;
+
+          // Очистите список подкатегорий
+          subcategorySelect.innerHTML = '<option value="" disabled selected>Выберите подкатегорию</option>';
+
+          if (categoryId) {
+            // Выполните запрос на сервер, чтобы получить подкатегории для выбранной категории
+            fetch(`/get_subcategories?category_id=${categoryId}`)
+              .then((response) => response.json())
+              .then((data) => {
+                data.forEach((subcategory) => {
+                  const option = document.createElement("option");
+                  option.value = subcategory.id;
+                  option.textContent = subcategory.name;
+                  subcategorySelect.appendChild(option);
+                });
+                subcategorySelect.removeAttribute("disabled");
+              })
+              .catch((error) => {
+                console.error("Ошибка при получении подкатегорий: " + error);
+              });
+          } else {
+            subcategorySelect.setAttribute("disabled", "true");
+          }
+        }
+
+        // JavaScript для обновления списка товаров при выборе категории и подкатегории
+    function updateProducts() {
+      const categorySelect = document.getElementById("category");
+      const subcategorySelect = document.getElementById("subcategory");
+      let categoryId = categorySelect.value;
+      let subcategoryId = subcategorySelect.value;
+
+      // Замените значение "all" на пустую строку, если выбраны "Все категории" или "Все подкатегории"
+      if (categoryId === "all") {
+        categoryId = "";
+      }
+      if (subcategoryId === "all") {
+        subcategoryId = "";
+      }
+
+      // Выполните запрос на сервер, чтобы получить товары на основе выбранных категории и подкатегории
+      fetch(`/get_products?category_id=${categoryId}&subcategory_id=${subcategoryId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          const tableBody = document.querySelector("table tbody");
+          tableBody.innerHTML = "";  // Очистите таблицу перед добавлением новых данных
+
+          data.forEach((product) => {
+            const row = tableBody.insertRow();
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            const cell3 = row.insertCell(2);
+            cell1.textContent = product.name;
+            cell2.textContent = product.about;
+            cell3.textContent = product.price;
+          });
+        })
+        .catch((error) => {
+          console.error("Ошибка при получении товаров: " + error);
+        });
+    }
+
+    // Добавьте обработчики событий для изменения выбора категории и подкатегории
+    document.getElementById("category").addEventListener("change", updateProducts);
+    document.getElementById("subcategory").addEventListener("change", updateProducts);
+
+    </script>
 {% endblock %}

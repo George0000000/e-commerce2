@@ -188,8 +188,77 @@ def about():
 
 @app.route('/goods')
 def goods():
-    products = Product.query.order_by(Product.price).all()
-    return render_template('goods.html', menu=menu, data=products)
+    # Получение списка всех категорий
+    categories = Category.query.all()
+
+    # Инициализация переменных категории и подкатегории
+    selected_category = None
+    selected_subcategory = None
+
+    # Проверка, были ли отправлены данные POST-запросом
+    if request.method == 'POST':
+        # Получение выбранных категории и подкатегории из формы
+        selected_category_id = request.form.get('category')
+        selected_subcategory_id = request.form.get('subcategory')
+
+        # Поиск выбранных категории и подкатегории
+        if selected_category_id:
+            selected_category = Category.query.get(selected_category_id)
+
+        if selected_subcategory_id:
+            selected_subcategory = Subcategory.query.get(selected_subcategory_id)
+
+    # Получение товаров на основе выбранных категории и подкатегории
+    if selected_subcategory:
+        products = selected_subcategory.products
+    elif selected_category:
+        # Если выбрана только категория, получите все товары из подкатегорий этой категории
+        products = Product.query.join(Subcategory).filter(Subcategory.category_id == selected_category.id).all()
+    else:
+        # Если не выбрана категория и подкатегория, получите все товары
+        products = Product.query.all()
+
+    return render_template('goods.html', menu=menu, categories=categories, data=products)
+
+
+@app.route('/get_subcategories', methods=['GET'])
+def get_subcategories():
+    category_id = request.args.get('category_id')
+    subcategories = Subcategory.query.filter_by(category_id=category_id).all()
+
+    print(subcategories)  # Выводите данные в консоль для отладки
+
+    subcategories_data = [{'id': subcategory.id, 'name': subcategory.name} for subcategory in subcategories]
+    return jsonify(subcategories_data)
+
+
+@app.route('/get_products', methods=['GET'])
+def get_products():
+    category_id = request.args.get('category_id')
+    subcategory_id = request.args.get('subcategory_id')
+
+    # Проверьте, были ли предоставлены категория и подкатегория
+    if category_id:
+        category = Category.query.get(category_id)
+
+        if category:
+            if subcategory_id:
+                # Если предоставлена как подкатегория, получите товары только из этой подкатегории
+                products = Product.query.filter_by(subcategory_id=subcategory_id).all()
+            else:
+                # Если подкатегория не предоставлена, получите все товары из данной категории
+                products = Product.query.join(Subcategory).filter(Subcategory.category_id == category_id).all()
+        else:
+            # Категория не найдена, вернуть пустой результат или сообщение об ошибке
+            return jsonify([])  # или jsonify({'error': 'Category not found'})
+
+    else:
+        # Если категория не предоставлена, получите все товары
+        products = Product.query.all()
+
+    # Преобразуйте данные о продуктах в формат JSON и верните их клиенту
+    product_data = [{'name': product.name, 'about': product.about, 'price': product.price} for product in products]
+    return jsonify(product_data)
 
 
 @app.route('/services')
